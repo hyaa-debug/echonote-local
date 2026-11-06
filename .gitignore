@@ -1,0 +1,23 @@
+# User recordings, notes, logs, model weights, and generated runtime
+data/
+.runtime/
+.downloads/
+.repair-backup/
+.venv/
+venv/
+models/
+*.sqlite3
+*.sqlite3-*
+*.log
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+Thumbs.db
+# Generated distributions
+/dist/
+/build/
+*.zip

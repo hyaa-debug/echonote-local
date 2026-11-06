@@ -1,0 +1,9 @@
+faster-whisper==1.2.1
+huggingface-hub==0.36.0
+ctranslate2==4.6.0
+av==16.0.1
+onnxruntime==1.23.2
+tokenizers==0.22.1
+numpy==2.3.4
+requests[socks]==2.32.5
+setuptools==80.9.0
