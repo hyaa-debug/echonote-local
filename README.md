@@ -4,6 +4,15 @@
 
 这是一个借助 AI 辅助开发的本地语音笔记项目，面向个人会议、学习和录音整理。浏览器提供操作界面，Python 在本机执行语音识别，Ollama 在本机执行文本总结与问答。
 
+## 选择 Windows 版本
+
+| 完整版 | 适合谁 | 下载与使用说明 |
+| --- | --- | --- |
+| 纯本地版 | 只在电脑上转写、总结、问答和导出，无需 Notion 账号或密钥 | [下载纯本地版 ZIP](https://github.com/hyaa-debug/echonote-local/archive/b34e79a9f52a1eb49a62205b3a55f53891992890.zip) · [本地操作图解](docs/images/echonote-guide.png) |
+| Notion 版 | 需要把选中的记录同步到自己的 Notion 数据库 | [下载 Notion 版 ZIP](https://github.com/hyaa-debug/echonote-local/archive/refs/heads/main.zip) · [Notion 设置图解](docs/notion.md) |
+
+任选一个 ZIP，全部解压，打开含有 `START.cmd` 的文件夹并双击启动。首次启动联网准备运行环境和模型。
+
 ## 使用流程图
 
 ```mermaid
@@ -20,6 +29,7 @@ flowchart TD
     I --> J[时间戳回听与编辑]
     I --> K[根据记录提问]
     I --> L[导出 Markdown / TXT / SRT]
+    I --> M[手动保存文字到 Notion]
 ```
 
 首次使用会联网下载缺少的模型；准备完成后，本地文件处理可离线运行。下载和处理期间保持启动窗口打开。
@@ -27,6 +37,12 @@ flowchart TD
 ## 图文操作说明
 
 ![EchoNote 本地版图文使用说明](docs/images/echonote-guide.png)
+
+### 保存到 Notion
+
+打开一条记录，点击「导出」旁的「保存到 Notion」。第一次需要在 Notion 授权一个数据库。按[分步图文说明](docs/notion.md)配置后，再次同步会更新同一页。
+
+![从记录页打开同步设置、填写连接并查看保存结果](docs/images/notion-sync.png)
 
 更多文档：[功能思维导图](docs/mindmap.md) · [Windows 安装与排错](docs/windows-install.md) · [验证记录](VALIDATION.md) · [第三方组件](THIRD_PARTY.md)
 
@@ -51,7 +67,7 @@ flowchart TD
 3. 未安装 Ollama 时，按官方安装器提示完成安装。
 4. 浏览器自动打开后，可以导入 `samples/chinese-demo.mp3` 进行首次测试。
 
-语音模型约 500 MB，默认文本模型约 2 GB，Ollama 安装需要额外空间。首次下载需要能访问官方模型服务。之后不用 API Key，不产生云端 API 调用费；本地运行会占用电脑内存与 CPU。
+语音模型约 500 MB，默认文本模型约 2 GB，Ollama 安装需要额外空间。首次下载需要能访问官方模型服务。本地转写与总结不用 API Key，不产生云端 API 调用费；本地运行会占用电脑内存与 CPU。
 
 源码仓库不包含整套 Python 运行环境和模型，首次启动会下载。`compat-wheels/` 仅包含修复 Windows 兼容性所需的官方 setuptools 小型轮子。
 
@@ -63,7 +79,7 @@ CTranslate2 4.6.0 的 Windows DLL 加载分支需要 `pkg_resources`。项目固
 
 ## 数据与隐私
 
-应用仅监听 `127.0.0.1`。文件和笔记保存在本机 `data/`，总结和问答只访问本机 Ollama。首次下载环境和模型需要联网。
+应用仅监听 `127.0.0.1`。文件和笔记保存在本机 `data/`，总结和问答只访问本机 Ollama。首次下载环境和模型需要联网。手动同步将所选记录的标题、摘要、原文和问答发送到授权的 Notion 数据库；连接密钥保存在本机笔记数据库里。
 
 `data/`、日志、运行环境、下载缓存和模型权重已经加入 `.gitignore`。备份笔记时先停止应用，再复制 `data/`。不要将真实录音、笔记数据库或含敏感内容的日志提交到仓库。
 
@@ -73,6 +89,7 @@ CTranslate2 4.6.0 的 Windows DLL 加载分支需要 `pkg_resources`。项目固
 | --- | --- |
 | `app/web/` | 中文网页界面，离线使用，无外部前端资源依赖 |
 | `app/server.py` | 本地接口、文件导入、音频回放和导出 |
+| `app/notion.py` | 数据库授权验证与记录同步 |
 | `app/store.py` | SQLite 记录与任务状态 |
 | `app/tasks.py` | 串行任务队列和失败恢复 |
 | `app/engine.py` | Whisper 转写、Ollama 总结与问答 |
@@ -97,6 +114,6 @@ python run.py --no-browser
 
 ## 当前边界
 
-支持本地音频、视频与文字，暂不支持视频平台链接抓取、说话人分离、跨设备同步或手机直接访问电脑服务。单文件限制 2 GB；处理速度和准确率取决于电脑与录音质量。
+支持本地音频、视频与文字，暂不支持视频平台链接抓取、说话人分离或手机直接访问电脑服务。手机可通过 Notion 查看已同步的文字。单文件限制 2 GB；处理速度和准确率取决于电脑与录音质量。
 
 项目已有 Linux 实际模型与网页流程验证；Windows 依赖问题根据实际启动反馈修正。当前仓库未启用 GitHub Actions 自动执行，已完成的验证范围见 VALIDATION.md。

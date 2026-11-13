@@ -27,6 +27,10 @@ mindmap
       导出 Markdown
       导出 TXT
       导出 SRT
+      手动同步到 Notion
+        授权一个数据库
+        保存摘要、原文和问答
+        再次同步更新原页
     数据保存
       本机 data 文件夹
       SQLite 数据库

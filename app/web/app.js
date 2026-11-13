@@ -38,3 +38,40 @@ $$('.suggestions button').forEach(b=>b.onclick=()=>{$('#question').value=b.textC
 window.addEventListener('beforeunload',e=>{if(editing||uploading){e.preventDefault();e.returnValue=''}});
 async function init(){try{token=(await api('/session')).token;await refresh();if(notes.length)await openNote(notes[0].id);setInterval(refresh,1800)}catch(e){toast('本地服务未启动，请双击 START.cmd 后刷新')}}
 init();
+
+let notionNote;
+const notionDialog = $('#notionDialog');
+$('#notionOpen').onclick = () => {
+  if (editing) return toast('请先保存原文修改');
+  notionNote = current.id;
+  $('#notionName').textContent = current.title;
+  $('#notionLink').hidden = true;
+  $('#notionStatus').textContent = '';
+  notionDialog.showModal();
+};
+$('#notionClose').onclick = () => notionDialog.close();
+notionDialog.addEventListener('close', () => { $('#notionKey').value = ''; });
+async function notionAction(work) {
+  const buttons = ['#notionSave', '#notionConfig', '#notionClose'];
+  buttons.forEach(s => $(s).disabled = true);
+  const keepOpen = e => e.preventDefault();
+  notionDialog.addEventListener('cancel', keepOpen);
+  $('#notionStatus').textContent = '正在连接 Notion…';
+  try { await work(); } catch (e) { $('#notionStatus').textContent = e.message; }
+  finally {
+    notionDialog.removeEventListener('cancel', keepOpen);
+    buttons.forEach(s => $(s).disabled = false);
+  }
+}
+$('#notionConfig').onclick = () => notionAction(async () => {
+  await api('/notion/config', {method:'POST', body:JSON.stringify({token:$('#notionKey').value,url:$('#notionDb').value})});
+  $('#notionKey').value = '';
+  $('#notionDetails').open = false;
+  $('#notionStatus').textContent = '已连接，点击下方按钮保存。';
+});
+$('#notionSave').onclick = () => notionAction(async () => {
+  const result = await api('/notes/'+notionNote+'/notion', {method:'POST',body:'{}'});
+  $('#notionLink').href = result.url;
+  $('#notionLink').hidden = false;
+  $('#notionStatus').textContent = '已保存到 Notion。';
+});

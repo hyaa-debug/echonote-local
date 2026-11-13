@@ -3,6 +3,7 @@ import json, logging, mimetypes, os, re, secrets, sqlite3, threading, uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse,parse_qs,unquote
+from . import notion
 from .store import Store
 from .engine import Engines
 from .tasks import Tasks
@@ -145,6 +146,13 @@ class Handler(BaseHTTPRequestHandler):
             job=self.server.tasks.submit(note['id'],'process')
             return self.send(201,{'note':note,'job_id':job})
         data=self.json_body()
+        if self.command=='POST' and path=='/api/notion/config':
+            return self.send(data=notion.configure(store,data))
+        match=re.fullmatch('/api/notes/([a-f0-9]{32})/notion',path)
+        if self.command=='POST' and match:
+            note=store.get(match[1])
+            if not note:return self.send(404,{'error':'笔记不存在'})
+            return self.send(data=notion.sync(store,note))
         if path=='/api/notes' and self.command=='POST':
             text=str(data.get('text','')).strip()
             if not text:raise ValueError('请先填写内容。')
